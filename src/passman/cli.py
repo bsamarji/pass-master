@@ -36,6 +36,9 @@ def add(service_name, generate):
 @click.argument("service_name", type=str, required=False)
 @click.option("-l", "--list", "list-all", help="List all stored entry names.", is_flag=True)
 def view(service_name, list_all):
+    """
+    Retrieve an entry using the service name or list all service names stored in the database.
+    """
     
     if list_all:
         click.echo(f"Retrieving all entry names.")
@@ -49,6 +52,9 @@ def view(service_name, list_all):
 @click.argument("service_name", type=str)
 @click.option("-g", "--generate")
 def update(service_name, generate):
+    """
+    Update the password for an entry. Option to generate a new password.
+    """
     
     if generate:
         password = "updatedPassword123"
@@ -65,8 +71,15 @@ def update(service_name, generate):
 @cli.command()
 @click.argument("service_name", type=str)
 def delete(service_name):
-    click.echo(f"Deleting entry for: {service_name}")
-    #db.delete(service_name)
+    """
+    Delete an entry.
+    """
+
+    if click.confirm(f"Ready to securely delete the entry for: {service_name}?"):
+        #db.delete(service_name)
+        click.echo(f"{service_name} successfully deleted.")
+    else:
+        click.echo("Operation cancelled.")
 
 cli()
 
