@@ -36,12 +36,15 @@ VALUES (
     ?
     )
 """
-
 SQL_DELETE_ENTRY = """
 DELETE FROM entries
 WHERE service_name = ?
 """
-
+SQL_UPDATE_ENTRY = """
+UPDATE entries
+SET password = ?
+WHERE service_name = ?
+"""
 
 def get_db_path():
     """
@@ -85,6 +88,17 @@ def add_entry(service_name, username, password, url, note, iv):
             )
     except sqlite3.Error as e:
         raise Exception(f"Could not insert entry for {service_name}. Details: {e}")
+    
+
+def update_entry(service_name, password):
+    """
+    Update the password for an entry in the database.
+    """
+    try:
+        with get_db_connection() as conn:
+            conn.execute(SQL_UPDATE_ENTRY, (password, service_name,))
+    except sqlite3.Error as e:
+        raise Exception(f"Could not update the entry for {service_name}. Details: {e}")
 
 
 def delete_entry(service_name):

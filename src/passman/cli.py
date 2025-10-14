@@ -76,7 +76,8 @@ def view(service_name, list_all):
 
 @cli.command()
 @click.argument("service_name", type=str)
-@click.option("-g", "--generate")
+@click.option("-g", "--generate", is_flag=True,
+    help="Generate a strong password instead of prompting for manual entry.")
 def update(service_name, generate):
     """
     Update the password for an entry. Option to generate a new password.
@@ -84,15 +85,19 @@ def update(service_name, generate):
 
     if generate:
         password = "updatedPassword123"
-        click.echo(f"Generated password for '{service_name}': {password}")
+        click.echo(f"Generated new password for '{service_name}': {password}")
     else:
         password = click.prompt(
-            "Enter password", hide_input=True, confirmation_prompt=True
+            f"Enter new password for {service_name}", hide_input=True, confirmation_prompt=True
         )
 
     if click.confirm(f"Ready to securely save the new password for '{service_name}'?"):
-        # db.update(service_name, password)
-        click.echo(f"Password for '{service_name}' saved successfully.")
+        try:
+            db.update_entry(service_name, password)
+            click.echo(f"Password for '{service_name}' saved successfully.")
+        except Exception as e:
+            print(f"DB ERROR: {e}")
+            click.Abort()
     else:
         click.echo("Operation cancelled.")
 
