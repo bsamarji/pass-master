@@ -5,6 +5,37 @@ import click
 # --- Config ---
 DB_FILE_NAME = "passman.db"
 DB_DIR_NAME = ".passman"
+SQL_CREATE_TABLE = """
+CREATE TABLE IF NOT EXISTS entries (
+    id INTEGER PRIMARY KEY,
+    service_name TEXT NOT NULL UNIQUE,
+    username BLOB NOT NULL,
+    password BLOB NOT NULL,
+    url TEXT NULL,
+    note TEXT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    iv BLOB NOT NULL
+    )
+"""
+SQL_INSERT_ENTRY = """
+INSERT INTO entries (
+    service_name,
+    username,
+    password,
+    url,
+    note,
+    iv
+    )
+VALUES (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?
+    )
+"""
 
 
 def get_db_path():
@@ -33,21 +64,19 @@ def initialise_db():
     """
     try:
         with get_db_connection() as conn:
+            conn.execute(SQL_CREATE_TABLE)
+    except sqlite3.Error as e:
+        click.echo(f"Could not initialise the database. Details: {e}", err=True)
+
+
+def add_entry(service_name, username, password, url, note, iv):
+    """
+    Insert a new entry into the database.
+    """
+    try:
+        with get_db_connection() as conn:
             conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS entries (
-                    id INTEGER PRIMARY KEY,
-                    service_name TEXT NOT NULL UNIQUE,
-                    username BLOB NOT NULL,
-                    password BLOB NOT NULL,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    iv BLOB NOT NULL
-                    )
-            """
+                SQL_INSERT_ENTRY, (service_name, username, password, url, note, iv)
             )
     except sqlite3.Error as e:
-        click.echo(
-            f"Could not initialise the database. Details: {e}", 
-            err=True
-        )
+        click.echo(f"Could not insert entry for {service_name}. Details: {e}")
