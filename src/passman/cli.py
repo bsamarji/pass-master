@@ -1,5 +1,5 @@
 import click
-from db import initialise_db
+import db
 
 
 @click.group()
@@ -9,7 +9,7 @@ def cli():
     """
     
     try:
-        initialise_db()
+        db.initialise_db()
     except Exception as e:
         click.echo(f"DB ERROR: {e}. Exiting program.", err=True)
         raise click.Abort()
@@ -46,7 +46,7 @@ def add(service_name, generate):
     )
 
     if click.confirm(f"Ready to securely save the entry for '{service_name}'?"):
-        # db.add(username, password, url, note)
+        db.add_entry(service_name, username, password, url, note, 1)
         click.echo(f"Entry for '{service_name}' saved successfully.")
     else:
         click.echo("Operation cancelled.")
