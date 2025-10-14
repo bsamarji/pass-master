@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS entries (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     iv BLOB NOT NULL
-    )
+    );
 """
 SQL_INSERT_ENTRY = """
 INSERT INTO entries (
@@ -34,17 +34,19 @@ VALUES (
     ?,
     ?,
     ?
-    )
+    );
 """
 SQL_DELETE_ENTRY = """
 DELETE FROM entries
-WHERE service_name = ?
+WHERE service_name = ?;
 """
 SQL_UPDATE_ENTRY = """
 UPDATE entries
-SET password = ?
-WHERE service_name = ?
+SET password = ?,
+    updated_at = datetime()
+WHERE service_name = ?;
 """
+
 
 def get_db_path():
     """
