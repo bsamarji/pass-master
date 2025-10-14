@@ -7,7 +7,7 @@ def cli():
     """
     PassMaster - A secure CLI password manager.
     """
-    
+
     try:
         db.initialise_db()
     except Exception as e:
@@ -46,8 +46,12 @@ def add(service_name, generate):
     )
 
     if click.confirm(f"Ready to securely save the entry for '{service_name}'?"):
-        db.add_entry(service_name, username, password, url, note, 1)
-        click.echo(f"Entry for '{service_name}' saved successfully.")
+        try:
+            db.add_entry(service_name, username, password, url, note, 1)
+            click.echo(f"Entry for '{service_name}' saved successfully.")
+        except Exception as e:
+            print(f"DB ERROR: {e}")
+            click.Abort()
     else:
         click.echo("Operation cancelled.")
 
@@ -101,8 +105,12 @@ def delete(service_name):
     """
 
     if click.confirm(f"Ready to securely delete the entry for: {service_name}?"):
-        # db.delete(service_name)
-        click.echo(f"{service_name} successfully deleted.")
+        try:
+            db.delete_entry(service_name)
+            click.echo(f"{service_name} successfully deleted.")
+        except Exception as e:
+            print(f"DB ERROR: {e}")
+            click.Abort()
     else:
         click.echo("Operation cancelled.")
 

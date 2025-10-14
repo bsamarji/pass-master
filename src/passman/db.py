@@ -37,6 +37,11 @@ VALUES (
     )
 """
 
+SQL_DELETE_ENTRY = """
+DELETE FROM entries
+WHERE service_name = ?
+"""
+
 
 def get_db_path():
     """
@@ -79,4 +84,15 @@ def add_entry(service_name, username, password, url, note, iv):
                 SQL_INSERT_ENTRY, (service_name, username, password, url, note, iv)
             )
     except sqlite3.Error as e:
-        click.echo(f"Could not insert entry for {service_name}. Details: {e}")
+        raise Exception(f"Could not insert entry for {service_name}. Details: {e}")
+
+
+def delete_entry(service_name):
+    """
+    Delete an entry from the database.
+    """
+    try:
+        with get_db_connection() as conn:
+            conn.execute(SQL_DELETE_ENTRY, (service_name,))
+    except sqlite3.Error as e:
+        raise Exception(f"Could not delete the entry for {service_name}. Details: {e}")
