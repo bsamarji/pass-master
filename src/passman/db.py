@@ -36,14 +36,25 @@ VALUES (
     ?
     );
 """
-SQL_DELETE_ENTRY = """
-DELETE FROM entries
-WHERE service_name = ?;
+SQL_VIEW_ENTRY = """
+SELECT id,
+    service_name,
+    password,
+    url,
+    note,
+    created_at,
+    updated_at
+FROM entries
+WHERE service_name = ?
 """
 SQL_UPDATE_ENTRY = """
 UPDATE entries
 SET password = ?,
     updated_at = datetime()
+WHERE service_name = ?;
+"""
+SQL_DELETE_ENTRY = """
+DELETE FROM entries
 WHERE service_name = ?;
 """
 
@@ -64,7 +75,6 @@ def get_db_connection():
     """
     db_path = get_db_path()
     conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
     return conn
 
 
@@ -90,7 +100,21 @@ def add_entry(service_name, username, password, url, note, iv):
             )
     except sqlite3.Error as e:
         raise Exception(f"Could not insert entry for {service_name}. Details: {e}")
-    
+
+
+def view_entry(service_name):
+    """
+    Retrieve information from the db for the requested entry.
+    """
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(SQL_VIEW_ENTRY, (service_name,))
+            row = cur.fetchone()
+            return row
+    except sqlite3.Error as e:
+        raise Exception(f"Could not retrieve entry for {service_name}. Details: {e}")
+
 
 def update_entry(service_name, password):
     """
@@ -98,7 +122,13 @@ def update_entry(service_name, password):
     """
     try:
         with get_db_connection() as conn:
-            conn.execute(SQL_UPDATE_ENTRY, (password, service_name,))
+            conn.execute(
+                SQL_UPDATE_ENTRY,
+                (
+                    password,
+                    service_name,
+                ),
+            )
     except sqlite3.Error as e:
         raise Exception(f"Could not update the entry for {service_name}. Details: {e}")
 

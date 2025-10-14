@@ -57,27 +57,28 @@ def add(service_name, generate):
 
 
 @cli.command()
-@click.argument("service_name", type=str, required=False)
-@click.option(
-    "-l", "--list", "list-all", help="List all stored entry names.", is_flag=True
-)
-def view(service_name, list_all):
+@click.argument("service_name", type=str)
+def view(service_name):
     """
-    Retrieve an entry using the service name or list all service names stored in the database.
+    Retrieve an entry from the db by searching on the service name.
     """
-
-    if list_all:
-        click.echo(f"Retrieving all entry names.")
-        # db.view_all()
-    else:
+    try:
         click.echo(f"Retrieving credentials for: {service_name}")
-        # db.view(service_name)
+        row = db.view_entry(service_name)
+        click.echo(row)
+    except Exception as e:
+        click.echo(f"DB ERROR: {e}")
+        click.Abort()
 
 
 @cli.command()
 @click.argument("service_name", type=str)
-@click.option("-g", "--generate", is_flag=True,
-    help="Generate a strong password instead of prompting for manual entry.")
+@click.option(
+    "-g",
+    "--generate",
+    is_flag=True,
+    help="Generate a strong password instead of prompting for manual entry.",
+)
 def update(service_name, generate):
     """
     Update the password for an entry. Option to generate a new password.
@@ -88,7 +89,9 @@ def update(service_name, generate):
         click.echo(f"Generated new password for '{service_name}': {password}")
     else:
         password = click.prompt(
-            f"Enter new password for {service_name}", hide_input=True, confirmation_prompt=True
+            f"Enter new password for {service_name}",
+            hide_input=True,
+            confirmation_prompt=True,
         )
 
     if click.confirm(f"Ready to securely save the new password for '{service_name}'?"):
