@@ -90,6 +90,26 @@ def search(search_term):
         )
 
 
+def list():
+    """
+    Retrieve information from the db for all service names and return a list containing tuples.
+    The output will be piped into the tabulate() func which requires a list of iterables.
+    """
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(SQL_LIST)
+            rows = cur.fetchall()
+            if len(rows) == 0:
+                click.echo(
+                    f"No entries are currently stored. Please add at least one entry"
+                )
+                sys.exit(0)
+            return rows
+    except sqlite3.Error as e:
+        raise Exception(f"Could not retrieve all entries. Details: {e}")
+
+
 def update_entry(service_name, password):
     """
     Update the password for an entry in the database.

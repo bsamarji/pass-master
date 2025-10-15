@@ -62,7 +62,7 @@ def add(service_name, generate):
 @click.argument("service_name", type=str)
 def view(service_name):
     """
-    Retrieve an entry from the database.
+    Retrieve an entry with sensitive info from the database.
     Display the entry in a beautiful table.
     """
     try:
@@ -91,7 +91,7 @@ def view(service_name):
 @click.argument("search_term", type=str)
 def search(search_term):
     """
-    Retrieve entry names from the database using a search term.
+    Retrieve entries with non-sensitive info matching on a search term from the database.
     Display entries in a beautiful table.
     Usernames and passwords are not retrieved. 
     User must use the 'view' command to retrieve sensitive information.
@@ -101,6 +101,36 @@ def search(search_term):
             f"Retrieving entries with service names that contain the search term: {search_term}"
         )
         rows = db.search(search_term)
+        display_table = tabulate.tabulate(
+            rows,
+            headers=[
+                "service_name",
+                "url",
+                "note",
+                "created_at",
+                "updated_at",
+            ],
+            tablefmt="rounded_grid",
+        )
+        click.echo(display_table)
+    except Exception as e:
+        click.echo(f"DB ERROR: {e}")
+        click.Abort()
+
+
+@cli.command()
+def list():
+    """
+    Retrieve all entries with non-sensitive info from the database.
+    Display entries in a beautiful table.
+    Usernames and passwords are not retrieved. 
+    User must use the 'view' command to retrieve sensitive information.
+    """
+    try:
+        click.echo(
+            f"Retrieving all entries."
+        )
+        rows = db.list()
         display_table = tabulate.tabulate(
             rows,
             headers=[

@@ -56,6 +56,15 @@ FROM entries
 WHERE service_name LIKE ?
 """
 
+SQL_LIST = """
+SELECT service_name,
+    url,
+    note,
+    created_at,
+    updated_at
+FROM entries
+"""
+
 SQL_UPDATE_ENTRY = """
 UPDATE entries
 SET password = ?,
