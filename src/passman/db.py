@@ -39,6 +39,7 @@ VALUES (
 SQL_VIEW_ENTRY = """
 SELECT id,
     service_name,
+    username,
     password,
     url,
     note,

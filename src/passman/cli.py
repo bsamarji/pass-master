@@ -1,5 +1,6 @@
 import click
 import db
+import tabulate
 
 
 @click.group()
@@ -64,8 +65,23 @@ def view(service_name):
     """
     try:
         click.echo(f"Retrieving credentials for: {service_name}")
-        row = db.view_entry(service_name)
-        click.echo(row)
+        row = []
+        row.append(db.view_entry(service_name))
+        display_table = tabulate.tabulate(
+            row,
+            headers=[
+                "id",
+                "service_name",
+                "username",
+                "password",
+                "url",
+                "note",
+                "created_at",
+                "updated_at",
+            ],
+            tablefmt="rounded_grid",
+        )
+        click.echo(display_table)
     except Exception as e:
         click.echo(f"DB ERROR: {e}")
         click.Abort()
