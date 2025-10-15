@@ -37,8 +37,7 @@ VALUES (
     );
 """
 SQL_VIEW_ENTRY = """
-SELECT id,
-    service_name,
+SELECT service_name,
     username,
     password,
     url,
@@ -47,6 +46,15 @@ SELECT id,
     updated_at
 FROM entries
 WHERE service_name = ?
+"""
+SQL_SEARCH = """
+SELECT service_name,
+    url,
+    note,
+    created_at,
+    updated_at
+FROM entries
+WHERE service_name LIKE ?
 """
 SQL_UPDATE_ENTRY = """
 UPDATE entries
@@ -105,16 +113,36 @@ def add_entry(service_name, username, password, url, note, iv):
 
 def view_entry(service_name):
     """
-    Retrieve information from the db for the requested entry.
+    Retrieve information from the db for the requested entry and return a list containing a tuple.
+    The output will be piped into the tabulate() func which requires a list of iterables.
     """
     try:
         with get_db_connection() as conn:
             cur = conn.cursor()
             cur.execute(SQL_VIEW_ENTRY, (service_name,))
-            row = cur.fetchone()
+            row = []
+            row.append(cur.fetchone())
             return row
     except sqlite3.Error as e:
         raise Exception(f"Could not retrieve entry for {service_name}. Details: {e}")
+    
+
+def search(search_term):
+    """
+    Retrieve information from the db for any service name that matches to the search term and return a list containing tuples.
+    The output will be piped into the tabulate() func which requires a list of iterables.
+    """
+    search_pattern = f"%{search_term}%"
+
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(SQL_SEARCH, (search_pattern,))
+            rows = []
+            rows.extend(cur.fetchall())
+            return rows
+    except sqlite3.Error as e:
+        raise Exception(f"Could not retrieve any entries for {search_term}. Details: {e}")
 
 
 def update_entry(service_name, password):

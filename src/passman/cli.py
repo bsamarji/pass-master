@@ -61,19 +61,45 @@ def add(service_name, generate):
 @click.argument("service_name", type=str)
 def view(service_name):
     """
-    Retrieve an entry from the db by searching on the service name.
+    Retrieve an entry from the db by searching on the service name. 
+    Display the entry in the terminal as a beautiful table.
     """
     try:
         click.echo(f"Retrieving credentials for: {service_name}")
-        row = []
-        row.append(db.view_entry(service_name))
+        row = db.view_entry(service_name)
         display_table = tabulate.tabulate(
             row,
             headers=[
-                "id",
                 "service_name",
                 "username",
                 "password",
+                "url",
+                "note",
+                "created_at",
+                "updated_at",
+            ],
+            tablefmt="rounded_grid",
+        )
+        click.echo(display_table)
+    except Exception as e:
+        click.echo(f"DB ERROR: {e}")
+        click.Abort()
+
+
+@cli.command()
+@click.argument("search_term", type=str)
+def search(search_term):
+    """
+    Retrieve all entry names and metadata from the db by matching the search term against entry names.
+    Display entries in a beautiful table.
+    """
+    try:
+        click.echo(f"Retrieving entry names for the search term: {search_term}")
+        rows = (db.search(search_term))
+        display_table = tabulate.tabulate(
+            rows,
+            headers=[
+                "service_name",
                 "url",
                 "note",
                 "created_at",
