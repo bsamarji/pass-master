@@ -1,9 +1,10 @@
 [project]
-name = "password-manager-cli"
+name = "PassMaster"
 version = "0.1.0"
-description = "Add your description here"
+description = "Secure password manager cli"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "click>=8.3.0",
+    "click==8.3.0",
+    "tabulate==0.9.0",
 ]
