@@ -61,7 +61,7 @@ def add(service_name, generate):
 @click.argument("service_name", type=str)
 def view(service_name):
     """
-    Retrieve an entry from the db by searching on the service name. 
+    Retrieve an entry from the db by searching on the service name.
     Display the entry in the terminal as a beautiful table.
     """
     try:
@@ -94,8 +94,10 @@ def search(search_term):
     Display entries in a beautiful table.
     """
     try:
-        click.echo(f"Retrieving entry names for the search term: {search_term}")
-        rows = (db.search(search_term))
+        click.echo(
+            f"Retrieving entries with service names that contain the search term: {search_term}"
+        )
+        rows = db.search(search_term)
         display_table = tabulate.tabulate(
             rows,
             headers=[

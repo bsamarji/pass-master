@@ -1,6 +1,7 @@
 import sqlite3
 from pathlib import Path
 import click
+import sys
 
 # --- Config ---
 DB_FILE_NAME = "passman.db"
@@ -125,7 +126,7 @@ def view_entry(service_name):
             return row
     except sqlite3.Error as e:
         raise Exception(f"Could not retrieve entry for {service_name}. Details: {e}")
-    
+
 
 def search(search_term):
     """
@@ -140,9 +141,17 @@ def search(search_term):
             cur.execute(SQL_SEARCH, (search_pattern,))
             rows = []
             rows.extend(cur.fetchall())
+            if len(rows) == 0:
+                click.echo(
+                    f"No entries were found with service names that contain the search term: {search_term}"
+                )
+                click.Abort()
+                sys.exit(0)
             return rows
     except sqlite3.Error as e:
-        raise Exception(f"Could not retrieve any entries for {search_term}. Details: {e}")
+        raise Exception(
+            f"Could not retrieve any entries for {search_term}. Details: {e}"
+        )
 
 
 def update_entry(service_name, password):
