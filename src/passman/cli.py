@@ -1,6 +1,7 @@
 import click
 import db
 import tabulate
+import sys
 
 
 @click.group()
@@ -30,6 +31,9 @@ def add(service_name, generate):
     Prompts user for username/email, password, url and note.
     Prompts user to confirm the new entry and save it into database.
     """
+    if db.validate_service_name(service_name) is True:
+        click.echo(f"An entry for '{service_name}' already exists. Please use a different name.")
+        sys.exit(0)
     username = click.prompt("Enter username/email", type=str)
 
     if generate:
@@ -93,7 +97,7 @@ def search(search_term):
     """
     Retrieve entries with non-sensitive info matching on a search term from the database.
     Display entries in a beautiful table.
-    Usernames and passwords are not retrieved. 
+    Usernames and passwords are not retrieved.
     User must use the 'view' command to retrieve sensitive information.
     """
     try:
@@ -123,13 +127,11 @@ def list():
     """
     Retrieve all entries with non-sensitive info from the database.
     Display entries in a beautiful table.
-    Usernames and passwords are not retrieved. 
+    Usernames and passwords are not retrieved.
     User must use the 'view' command to retrieve sensitive information.
     """
     try:
-        click.echo(
-            f"Retrieving all entries."
-        )
+        click.echo(f"Retrieving all entries.")
         rows = db.list()
         display_table = tabulate.tabulate(
             rows,
@@ -161,7 +163,7 @@ def update(service_name, generate):
     Update the password for an entry in the database.
     Prompts user to confirm password update.
     """
-
+    db.validate_service_name(service_name)
     if generate:
         password = "updatedPassword123"
         click.echo(f"Generated new password for '{service_name}': {password}")
@@ -190,7 +192,7 @@ def delete(service_name):
     Delete an entry in the database.
     Prompts user to confirm deletion.
     """
-
+    db.validate_service_name(service_name)
     if click.confirm(f"Ready to securely delete the entry for: {service_name}?"):
         try:
             db.delete_entry(service_name)

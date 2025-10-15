@@ -136,3 +136,28 @@ def delete_entry(service_name):
             conn.execute(SQL_DELETE_ENTRY, (service_name,))
     except sqlite3.Error as e:
         raise Exception(f"Could not delete the entry for {service_name}. Details: {e}")
+
+
+def validate_service_name(service_name):
+    """
+    Validate that a record exists in the database using the passed service name.
+    """
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                SQL_VALIDATE_SERVICE_NAME,
+                (service_name,),
+            )
+            row = cur.fetchmany(1)
+            if len(row) == 0:
+                click.echo(
+                    f"No entry is stored with service name: {service_name}. Please check the spelling and try again."
+                )
+                sys.exit(0)
+            else:
+                return True
+    except sqlite3.Error as e:
+        raise Exception(
+            f"Could not validate the entry for {service_name}. Details: {e}"
+        )

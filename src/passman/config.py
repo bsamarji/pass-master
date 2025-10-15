@@ -76,3 +76,9 @@ SQL_DELETE_ENTRY = """
 DELETE FROM entries
 WHERE service_name = ?;
 """
+
+SQL_VALIDATE_SERVICE_NAME = """
+SELECT service_name
+FROM entries
+WHERE service_name = ?
+"""
