@@ -27,7 +27,8 @@ def cli():
 def add(service_name, generate):
     """
     Creates a new entry in the database.
-    Prompts user for username/email and if they want to generate a password or enter one themselves.
+    Prompts user for username/email, password, url and note.
+    Prompts user to confirm the new entry and save it into database.
     """
     username = click.prompt("Enter username/email", type=str)
 
@@ -61,8 +62,8 @@ def add(service_name, generate):
 @click.argument("service_name", type=str)
 def view(service_name):
     """
-    Retrieve an entry from the db by searching on the service name.
-    Display the entry in the terminal as a beautiful table.
+    Retrieve an entry from the database.
+    Display the entry in a beautiful table.
     """
     try:
         click.echo(f"Retrieving credentials for: {service_name}")
@@ -90,8 +91,10 @@ def view(service_name):
 @click.argument("search_term", type=str)
 def search(search_term):
     """
-    Retrieve all entry names and metadata from the db by matching the search term against entry names.
+    Retrieve entry names from the database using a search term.
     Display entries in a beautiful table.
+    Usernames and passwords are not retrieved. 
+    User must use the 'view' command to retrieve sensitive information.
     """
     try:
         click.echo(
@@ -125,7 +128,8 @@ def search(search_term):
 )
 def update(service_name, generate):
     """
-    Update the password for an entry. Option to generate a new password.
+    Update the password for an entry in the database.
+    Prompts user to confirm password update.
     """
 
     if generate:
@@ -153,7 +157,8 @@ def update(service_name, generate):
 @click.argument("service_name", type=str)
 def delete(service_name):
     """
-    Delete an entry.
+    Delete an entry in the database.
+    Prompts user to confirm deletion.
     """
 
     if click.confirm(f"Ready to securely delete the entry for: {service_name}?"):
