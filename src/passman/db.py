@@ -2,71 +2,7 @@ import sqlite3
 from pathlib import Path
 import click
 import sys
-
-# --- Config ---
-DB_FILE_NAME = "passman.db"
-DB_DIR_NAME = ".passman"
-SQL_CREATE_TABLE = """
-CREATE TABLE IF NOT EXISTS entries (
-    id INTEGER PRIMARY KEY,
-    service_name TEXT NOT NULL UNIQUE,
-    username BLOB NOT NULL,
-    password BLOB NOT NULL,
-    url TEXT NULL,
-    note TEXT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    iv BLOB NOT NULL
-    );
-"""
-SQL_INSERT_ENTRY = """
-INSERT INTO entries (
-    service_name,
-    username,
-    password,
-    url,
-    note,
-    iv
-    )
-VALUES (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?
-    );
-"""
-SQL_VIEW_ENTRY = """
-SELECT service_name,
-    username,
-    password,
-    url,
-    note,
-    created_at,
-    updated_at
-FROM entries
-WHERE service_name = ?
-"""
-SQL_SEARCH = """
-SELECT service_name,
-    url,
-    note,
-    created_at,
-    updated_at
-FROM entries
-WHERE service_name LIKE ?
-"""
-SQL_UPDATE_ENTRY = """
-UPDATE entries
-SET password = ?,
-    updated_at = datetime()
-WHERE service_name = ?;
-"""
-SQL_DELETE_ENTRY = """
-DELETE FROM entries
-WHERE service_name = ?;
-"""
+from config import *
 
 
 def get_db_path():
@@ -121,8 +57,10 @@ def view_entry(service_name):
         with get_db_connection() as conn:
             cur = conn.cursor()
             cur.execute(SQL_VIEW_ENTRY, (service_name,))
-            row = []
-            row.append(cur.fetchone())
+            row = cur.fetchmany(1)
+            if len(row) == 0:
+                click.echo(f"No entry was found with the service name: {service_name}")
+                sys.exit(0)
             return row
     except sqlite3.Error as e:
         raise Exception(f"Could not retrieve entry for {service_name}. Details: {e}")
@@ -139,13 +77,11 @@ def search(search_term):
         with get_db_connection() as conn:
             cur = conn.cursor()
             cur.execute(SQL_SEARCH, (search_pattern,))
-            rows = []
-            rows.extend(cur.fetchall())
+            rows = cur.fetchall()
             if len(rows) == 0:
                 click.echo(
                     f"No entries were found with service names that contain the search term: {search_term}"
                 )
-                click.Abort()
                 sys.exit(0)
             return rows
     except sqlite3.Error as e:
