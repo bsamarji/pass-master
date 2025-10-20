@@ -82,3 +82,21 @@ SELECT service_name
 FROM entries
 WHERE service_name = ?
 """
+
+SQL_CREATE_CONFIG = """
+CREATE TABLE IF NOT EXISTS config (
+key_name TEXT PRIMARY KEY,
+key_value BLOB NOT NULL
+)
+"""
+
+SQL_INSERT_CONFIG = """
+INSERT OR IGNORE INTO config (
+    key_name, 
+    key_value
+)
+VALUES (
+    ?,
+    ?
+)
+"""

@@ -31,6 +31,7 @@ def initialise_db():
     try:
         with get_db_connection() as conn:
             conn.execute(SQL_CREATE_TABLE)
+            conn.execute(SQL_CREATE_CONFIG)
     except sqlite3.Error as e:
         click.echo(f"Could not initialise the database. Details: {e}", err=True)
 
@@ -160,4 +161,17 @@ def validate_service_name(service_name):
     except sqlite3.Error as e:
         raise Exception(
             f"Could not validate the entry for {service_name}. Details: {e}"
+        )
+
+
+def store_salt(salt):
+    """
+    Store a generated salt in the database.
+    """
+    try:
+        with get_db_connection() as conn:
+            conn.execute(SQL_INSERT_CONFIG, ("salt", salt))
+    except sqlite3.Error as e:
+        raise Exception(
+            f"Could not insert the generated salt into the 'config' table. Details: {e}"
         )

@@ -2,6 +2,7 @@ import click
 import db
 import tabulate
 import sys
+import security
 
 
 @click.group(
@@ -16,6 +17,13 @@ def cli():
     """
     try:
         db.initialise_db()
+    except Exception as e:
+        click.echo(f"DB ERROR: {e}. Exiting program.", err=True)
+        raise click.Abort()
+    
+    try:
+        salt = security.generate_salt()
+        db.store_salt(salt)
     except Exception as e:
         click.echo(f"DB ERROR: {e}. Exiting program.", err=True)
         raise click.Abort()
