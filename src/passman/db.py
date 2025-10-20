@@ -164,14 +164,34 @@ def validate_service_name(service_name):
         )
 
 
-def store_salt(salt):
+def insert_config(key, value):
     """
     Store a generated salt in the database.
     """
     try:
         with get_db_connection() as conn:
-            conn.execute(SQL_INSERT_CONFIG, ("salt", salt))
+            conn.execute(SQL_INSERT_CONFIG, (key, value))
     except sqlite3.Error as e:
         raise Exception(
-            f"Could not insert the generated salt into the 'config' table. Details: {e}"
+            f"Could not insert the {key}: {value} into the 'config' table. Details: {e}"
+        )
+
+def select_config(key_name):
+    """
+    Retrieve key value from config table by searching on key name.
+    """
+    try:
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute(SQL_SELECT_CONFIG, (key_name,))
+            row = cur.fetchmany(1)
+            if len(row) == 0:
+                click.echo(
+                    f"No entries were found with the key name: {key_name}"
+                )
+                sys.exit(0)
+            return row
+    except sqlite3.Error as e:
+        raise Exception(
+            f"Could not retrieve the key value for {key_name}. Details: {e}"
         )

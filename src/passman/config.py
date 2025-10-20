@@ -100,3 +100,9 @@ VALUES (
     ?
 )
 """
+
+SQL_SELECT_CONFIG = """
+SELECT key_value
+FROM config
+WHERE key_name = ?
+"""

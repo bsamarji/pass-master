@@ -4,7 +4,6 @@ import tabulate
 import sys
 import security
 
-
 @click.group(
     context_settings=dict(help_option_names=["-h", "--help"]),
     epilog="Use 'passman <command> --help' for command-specific usage and examples.",
@@ -22,8 +21,7 @@ def cli():
         raise click.Abort()
     
     try:
-        salt = security.generate_salt()
-        db.store_salt(salt)
+        security.initialise_security()
     except Exception as e:
         click.echo(f"DB ERROR: {e}. Exiting program.", err=True)
         raise click.Abort()
