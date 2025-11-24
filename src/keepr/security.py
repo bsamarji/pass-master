@@ -30,8 +30,11 @@ def initialise_security_dir():
     try:
         Path.mkdir(security_dir, parents=True, exist_ok=True)
     except OSError as e:
-        click.secho(f"Error creating security directory at {security_dir}: {e}", **COLOR_ERROR)
+        click.secho(
+            f"Error creating security directory at {security_dir}: {e}", **COLOR_ERROR
+        )
         sys.exit(1)
+
 
 def generate_salt_file():
     """
@@ -68,7 +71,9 @@ def retrieve_salt():
             sys.exit(1)
         return salt
     except FileNotFoundError:
-        click.secho(f"Salt file not found at {salt_file}. Run setup first.", **COLOR_ERROR)
+        click.secho(
+            f"Salt file not found at {salt_file}. Run setup first.", **COLOR_ERROR
+        )
         sys.exit(1)
     except OSError as e:
         click.secho(f"Error reading salt file: {e}", **COLOR_ERROR)
@@ -119,7 +124,9 @@ def login():
         return master_password
     else:
         master_password = click.prompt(
-            click.style("Please enter your current master password", **COLOR_PROMPT_BOLD),
+            click.style(
+                "Please enter your current master password", **COLOR_PROMPT_BOLD
+            ),
             hide_input=True,
             confirmation_prompt=True,
         )
@@ -142,7 +149,9 @@ def prompt_new_master_password():
     if not master_password:
         click.secho("Master password cannot be empty.", **COLOR_ERROR)
         sys.exit(1)
-    if click.confirm(click.style("Ready to save your new master password?", **COLOR_PROMPT_LIGHT)):
+    if click.confirm(
+        click.style("Ready to save your new master password?", **COLOR_PROMPT_LIGHT)
+    ):
         click.secho("Successfully updated master password!", **COLOR_SUCCESS)
     else:
         click.secho("Operation cancelled.", **COLOR_WARNING)
@@ -233,7 +242,9 @@ def retrieve_and_decrypt_pek(derived_key):
         with open(pek_file, "rb") as file:
             encrypted_pek = file.read()
     except FileNotFoundError:
-        click.secho(f"PEK file not found at {pek_file}. Run setup first.", **COLOR_ERROR)
+        click.secho(
+            f"PEK file not found at {pek_file}. Run setup first.", **COLOR_ERROR
+        )
         return None
     except OSError as e:
         click.secho(f"Error reading PEK file: {e}", **COLOR_ERROR)
@@ -251,7 +262,9 @@ def retrieve_and_decrypt_pek(derived_key):
         pek = f.decrypt(encrypted_pek)
         return pek
     except InvalidToken:
-        click.secho("The master password is incorrect. Please try again.", **COLOR_ERROR)
+        click.secho(
+            "The master password is incorrect. Please try again.", **COLOR_ERROR
+        )
         sys.exit(1)
     except Exception as e:
         click.secho(f"Unknown decryption error: {e}", **COLOR_ERROR)

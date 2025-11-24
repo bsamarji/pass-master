@@ -34,22 +34,22 @@ def authenticate_from_session(ctx):
     if session_pek:
         # Vault is successfully unlocked via session file!
         ctx.ensure_object(dict)
-        ctx.obj['pek'] = session_pek
+        ctx.obj["pek"] = session_pek
         db.initialise_db(pek=session_pek)
 
         # --- SUPPRESS MESSAGE LOGIC ---
         subcommand_name = ctx.invoked_subcommand
-        is_help_requested = any(h in sys.argv for h in ['-h', '--help'])
-        is_only_subcommand = (len(sys.argv) == 2 and subcommand_name is not None)
+        is_help_requested = any(h in sys.argv for h in ["-h", "--help"])
+        is_only_subcommand = len(sys.argv) == 2 and subcommand_name is not None
 
         # Suppress the message if:
         # 1. Help was explicitly requested (e.g., keepr view -h)
         # 2. The subcommand was run with no args AND that command is NOT in the valid no-arg list.
         #    (e.g., 'keepr add' is suppressed, but 'keepr list' is NOT suppressed)
         should_suppress = (
-                is_help_requested or
-                (subcommand_name in ['login', 'logout']) or
-                (is_only_subcommand and subcommand_name not in COMMANDS_VALID_NO_ARGS)
+            is_help_requested
+            or (subcommand_name in ["login", "logout"])
+            or (is_only_subcommand and subcommand_name not in COMMANDS_VALID_NO_ARGS)
         )
 
         if not should_suppress:
@@ -59,6 +59,7 @@ def authenticate_from_session(ctx):
 
         return True
     return False
+
 
 @click.group(
     context_settings=dict(help_option_names=["-h", "--help"]),
@@ -75,16 +76,20 @@ def cli(ctx):
     if not authenticate_from_session(ctx=ctx):
         # Set a flag indicating the vault is locked
         ctx.ensure_object(dict)
-        ctx.obj['pek'] = None
+        ctx.obj["pek"] = None
 
-        if ctx.invoked_subcommand not in ['login', 'logout', None]:
+        if ctx.invoked_subcommand not in ["login", "logout", None]:
             # Check if help was explicitly requested. If so, suppress the lock warning.
-            is_help_requested = any(h in sys.argv for h in ['-h', '--help'])
+            is_help_requested = any(h in sys.argv for h in ["-h", "--help"])
             if not is_help_requested:
-                click.secho("Vault is LOCKED. Run 'keepr login' to unlock it.", **COLOR_ERROR)
+                click.secho(
+                    "Vault is LOCKED. Run 'keepr login' to unlock it.", **COLOR_ERROR
+                )
 
 
-@cli.command(help="Logs in and unlocks your vault (creates or renews your session). Each session lasts 1 hour.")
+@cli.command(
+    help="Logs in and unlocks your vault (creates or renews your session). Each session lasts 1 hour."
+)
 def login():
     """
     Prompts for the master password, decrypts the PEK, and stores it in a session file.
@@ -116,12 +121,22 @@ def login():
     # --- SESSION STORAGE ---
     if session.store_session_data(pek=session_pek):
         db.initialise_db(pek=session_pek)  # Ensure DB is initialized with the PEK
-        click.secho("\nVault UNLOCKED. Commands will now run without further authentication.", **COLOR_SUCCESS)
+        click.secho(
+            "\nVault UNLOCKED. Commands will now run without further authentication.",
+            **COLOR_SUCCESS,
+        )
         click.secho("Remember to run 'keepr logout' when finished.", **COLOR_WARNING)
         if SESSION_TIMEOUT_SECONDS < 60:
-            click.secho(f"The session will terminate in {SESSION_TIMEOUT_SECONDS} seconds.", **COLOR_WARNING)
+            click.secho(
+                f"The session will terminate in {SESSION_TIMEOUT_SECONDS} seconds.",
+                **COLOR_WARNING,
+            )
         else:
-            click.secho(f"The session will terminate in {int(SESSION_TIMEOUT_SECONDS / 60)} minutes.", **COLOR_WARNING)
+            click.secho(
+                f"The session will terminate in {int(SESSION_TIMEOUT_SECONDS / 60)} minutes.",
+                **COLOR_WARNING,
+            )
+
 
 @cli.command(help="Instantly locks the vault and clears any active session.")
 def logout():
@@ -156,7 +171,9 @@ def change_master_password():
 
     # 4. Create a new KEK from the new password
     kdf = security.key_derivation_function(salt=salt)
-    new_kek = security.generate_derived_key(kdf=kdf, master_password=new_master_password)
+    new_kek = security.generate_derived_key(
+        kdf=kdf, master_password=new_master_password
+    )
 
     # 5. Re-encrypt pek with new KEK and write pek to disk
     security.encrypt_pek(derived_key=new_kek, pek=pek)
@@ -177,7 +194,7 @@ def change_master_password():
       \b
     NOTE: Using -g will automatically generate a cryptographically strong password.
     \b
-    """
+    """,
 )
 @click.argument("service_name", type=str)
 @click.option(
@@ -185,7 +202,7 @@ def change_master_password():
     "--generate",
     is_flag=True,
     help="Generate a cryptographically strong password instead of prompting for user input. "
-         "By default it includes special characters.",
+    "By default it includes special characters.",
 )
 @click.option(
     "-w",
@@ -206,40 +223,60 @@ def add(ctx, service_name, generate, without_special_chars):
         sys.exit(1)
 
     if db.validate_service_name(pek=session_pek, service_name=service_name) is True:
-        click.secho(f"An entry for '{service_name}' already exists. Please use a different name.", **COLOR_WARNING)
+        click.secho(
+            f"An entry for '{service_name}' already exists. Please use a different name.",
+            **COLOR_WARNING,
+        )
         sys.exit(0)
 
-    username = click.prompt(click.style("Enter username/email", **COLOR_PROMPT_BOLD), type=str)
+    username = click.prompt(
+        click.style("Enter username/email", **COLOR_PROMPT_BOLD), type=str
+    )
 
     if generate:
         password = password_generator(without_special_chars=without_special_chars)
-        click.secho(f"Generated password for '{service_name}': {password}", **COLOR_SUCCESS)
+        click.secho(
+            f"Generated password for '{service_name}': {password}", **COLOR_SUCCESS
+        )
     else:
         password = click.prompt(
             click.style("Enter password", **COLOR_PROMPT_BOLD),
             hide_input=True,
-            confirmation_prompt=True
+            confirmation_prompt=True,
         )
 
     url = click.prompt(
         click.style("Enter url (optional)", **COLOR_PROMPT_LIGHT),
         type=str,
         default="null",
-        show_default=False
+        show_default=False,
     )
 
     note = click.prompt(
         click.style("Enter note (optional)", **COLOR_PROMPT_LIGHT),
         type=str,
         default="null",
-        show_default=False
+        show_default=False,
     )
 
-    if click.confirm(click.style(f"Ready to securely save the entry for '{service_name}'?", **COLOR_PROMPT_LIGHT)):
+    if click.confirm(
+        click.style(
+            f"Ready to securely save the entry for '{service_name}'?",
+            **COLOR_PROMPT_LIGHT,
+        )
+    ):
         try:
-            db.add_entry(pek=session_pek, service_name=service_name, username=username,
-                         password=password, url=url, note=note)
-            click.secho(f"Entry for '{service_name}' saved successfully.", **COLOR_SUCCESS)
+            db.add_entry(
+                pek=session_pek,
+                service_name=service_name,
+                username=username,
+                password=password,
+                url=url,
+                note=note,
+            )
+            click.secho(
+                f"Entry for '{service_name}' saved successfully.", **COLOR_SUCCESS
+            )
         except Exception as e:
             click.secho(f"DB ERROR: {e}", **COLOR_ERROR)
             click.Abort()
@@ -286,15 +323,17 @@ def view(ctx, service_name):
 
         styled_row = []
         for r in row:
-            styled_row.append([
-                click.style(r[0], **COLOR_SENSITIVE_DATA), # service_name
-                click.style(r[1], **COLOR_SENSITIVE_DATA),  # username
-                click.style(r[2], **COLOR_SENSITIVE_DATA),  # password
-                click.style(r[3], **COLOR_NON_SENSITIVE_DATA),  # url
-                click.style(r[4], **COLOR_NON_SENSITIVE_DATA),  # note
-                click.style(r[5], **COLOR_NON_SENSITIVE_DATA),  # created_at
-                click.style(r[6], **COLOR_NON_SENSITIVE_DATA)  # updated_at
-            ])
+            styled_row.append(
+                [
+                    click.style(r[0], **COLOR_SENSITIVE_DATA),  # service_name
+                    click.style(r[1], **COLOR_SENSITIVE_DATA),  # username
+                    click.style(r[2], **COLOR_SENSITIVE_DATA),  # password
+                    click.style(r[3], **COLOR_NON_SENSITIVE_DATA),  # url
+                    click.style(r[4], **COLOR_NON_SENSITIVE_DATA),  # note
+                    click.style(r[5], **COLOR_NON_SENSITIVE_DATA),  # created_at
+                    click.style(r[6], **COLOR_NON_SENSITIVE_DATA),  # updated_at
+                ]
+            )
 
         display_table = tabulate.tabulate(
             styled_row,
@@ -304,13 +343,18 @@ def view(ctx, service_name):
         click.secho(display_table)
 
         pyperclip.copy(row[0][2])
-        click.secho(f"The password for '{service_name}' has been copied to your clipboard!", **COLOR_SUCCESS)
+        click.secho(
+            f"The password for '{service_name}' has been copied to your clipboard!",
+            **COLOR_SUCCESS,
+        )
         click.secho("\nSECURITY NOTE: Clear your screen immediately!", **COLOR_ERROR)
 
     except pyperclip.PyperclipException as e:
         click.secho(f"ERROR: {e}", **COLOR_ERROR)
-        click.secho("Please install ONE of the following copy/paste mechanisms (e.g. 'pip install xsel'):",
-                    **COLOR_WARNING)
+        click.secho(
+            "Please install ONE of the following copy/paste mechanisms (e.g. 'pip install xsel'):",
+            **COLOR_WARNING,
+        )
         click.secho("xsel, xclip, gtk, PyQt4", **COLOR_WARNING)
         click.Abort()
     except Exception as e:
@@ -360,13 +404,15 @@ def search(ctx, search_term):
 
         styled_rows = []
         for r in rows:
-            styled_rows.append([
-                click.style(r[0], **COLOR_SENSITIVE_DATA),  # service_name
-                click.style(r[1], **COLOR_NON_SENSITIVE_DATA),  # url
-                click.style(r[2], **COLOR_NON_SENSITIVE_DATA),  # note
-                click.style(r[3], **COLOR_NON_SENSITIVE_DATA),  # created_at
-                click.style(r[4], **COLOR_NON_SENSITIVE_DATA)  # updated_at
-            ])
+            styled_rows.append(
+                [
+                    click.style(r[0], **COLOR_SENSITIVE_DATA),  # service_name
+                    click.style(r[1], **COLOR_NON_SENSITIVE_DATA),  # url
+                    click.style(r[2], **COLOR_NON_SENSITIVE_DATA),  # note
+                    click.style(r[3], **COLOR_NON_SENSITIVE_DATA),  # created_at
+                    click.style(r[4], **COLOR_NON_SENSITIVE_DATA),  # updated_at
+                ]
+            )
 
         display_table = tabulate.tabulate(
             styled_rows,
@@ -417,13 +463,15 @@ def list_entries(ctx):
 
         styled_rows = []
         for r in rows:
-            styled_rows.append([
-                click.style(r[0], **COLOR_SENSITIVE_DATA),  # service_name
-                click.style(r[1], **COLOR_NON_SENSITIVE_DATA),  # url
-                click.style(r[2], **COLOR_NON_SENSITIVE_DATA),  # note
-                click.style(r[3], **COLOR_NON_SENSITIVE_DATA),  # created_at
-                click.style(r[4], **COLOR_NON_SENSITIVE_DATA)  # updated_at
-            ])
+            styled_rows.append(
+                [
+                    click.style(r[0], **COLOR_SENSITIVE_DATA),  # service_name
+                    click.style(r[1], **COLOR_NON_SENSITIVE_DATA),  # url
+                    click.style(r[2], **COLOR_NON_SENSITIVE_DATA),  # note
+                    click.style(r[3], **COLOR_NON_SENSITIVE_DATA),  # created_at
+                    click.style(r[4], **COLOR_NON_SENSITIVE_DATA),  # updated_at
+                ]
+            )
 
         display_table = tabulate.tabulate(
             styled_rows,
@@ -459,8 +507,8 @@ def list_entries(ctx):
     "--generate",
     is_flag=True,
     help="Generate a cryptographically strong password instead of prompting for user input. "
-         "By default it includes special characters. "
-         "Use the -w option to generate a cryptographically strong password without special characters.",
+    "By default it includes special characters. "
+    "Use the -w option to generate a cryptographically strong password without special characters.",
 )
 @click.option(
     "-w",
@@ -479,13 +527,17 @@ def update(ctx, service_name, generate, without_special_chars):
         sys.exit(1)
 
     if db.validate_service_name(pek=session_pek, service_name=service_name) is False:
-        click.secho(f"An entry for '{service_name}' doesn't exist. Please check the service name and try again.",
-                    **COLOR_WARNING)
+        click.secho(
+            f"An entry for '{service_name}' doesn't exist. Please check the service name and try again.",
+            **COLOR_WARNING,
+        )
         sys.exit(0)
 
     if generate:
         password = password_generator(without_special_chars=without_special_chars)
-        click.secho(f"Generated new password for '{service_name}': {password}", **COLOR_SUCCESS)
+        click.secho(
+            f"Generated new password for '{service_name}': {password}", **COLOR_SUCCESS
+        )
     else:
         password = click.prompt(
             click.style(f"Enter new password for {service_name}", **COLOR_PROMPT_BOLD),
@@ -494,10 +546,18 @@ def update(ctx, service_name, generate, without_special_chars):
         )
 
     if click.confirm(
-            click.style(f"Ready to securely save the new password for '{service_name}'?", **COLOR_PROMPT_LIGHT)):
+        click.style(
+            f"Ready to securely save the new password for '{service_name}'?",
+            **COLOR_PROMPT_LIGHT,
+        )
+    ):
         try:
-            db.update_entry(pek=session_pek, service_name=service_name, password=password)
-            click.secho(f"Password for '{service_name}' saved successfully.", **COLOR_SUCCESS)
+            db.update_entry(
+                pek=session_pek, service_name=service_name, password=password
+            )
+            click.secho(
+                f"Password for '{service_name}' saved successfully.", **COLOR_SUCCESS
+            )
         except Exception as e:
             # DB Error: Red
             click.secho(f"DB ERROR: {e}", **COLOR_ERROR)
@@ -528,12 +588,18 @@ def delete(ctx, service_name):
         sys.exit(1)
 
     if db.validate_service_name(pek=session_pek, service_name=service_name) is False:
-        click.secho(f"An entry for '{service_name}' doesn't exist. Please check the service name and try again.",
-                    **COLOR_WARNING)
+        click.secho(
+            f"An entry for '{service_name}' doesn't exist. Please check the service name and try again.",
+            **COLOR_WARNING,
+        )
         sys.exit(0)
 
-    if click.confirm(click.style(f"Ready to PERMANENTLY delete the entry for: {service_name}? (This cannot be undone)",
-                                 **COLOR_ERROR)):
+    if click.confirm(
+        click.style(
+            f"Ready to PERMANENTLY delete the entry for: {service_name}? (This cannot be undone)",
+            **COLOR_ERROR,
+        )
+    ):
         try:
             db.delete_entry(pek=session_pek, service_name=service_name)
             click.secho(f"{service_name} successfully deleted.", **COLOR_SUCCESS)
@@ -542,5 +608,6 @@ def delete(ctx, service_name):
             click.Abort()
     else:
         click.secho("Operation cancelled.", **COLOR_WARNING)
+
 
 cli(obj={})

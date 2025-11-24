@@ -30,6 +30,7 @@ def set_default_user_config_values():
 
     return user_config
 
+
 def initialise_user_config(user_config_file_path):
     """
     Initialise the user config file.
@@ -40,5 +41,9 @@ def initialise_user_config(user_config_file_path):
             with open(user_config_file_path, "w") as config_file:
                 user_config.write(config_file)
         except Exception as e:
-            click.secho(f"Critical error: Failed to initialise user configuration file '{user_config_file_path}'. Details: {e}", fg="red", bold=True)
+            click.secho(
+                f"Critical error: Failed to initialise user configuration file '{user_config_file_path}'. Details: {e}",
+                fg="red",
+                bold=True,
+            )
             sys.exit(1)

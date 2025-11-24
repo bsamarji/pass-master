@@ -64,9 +64,7 @@ def initialise_db(pek):
             conn.execute(SQL_CREATE_TABLE)
     except sqlite3.Error as e:
         click.secho(
-            f"Could not initialise the database. Details: {e}",
-            err=True,
-            **COLOR_ERROR
+            f"Could not initialise the database. Details: {e}", err=True, **COLOR_ERROR
         )
         sys.exit(1)
 
@@ -97,7 +95,10 @@ def view_entry(pek, service_name):
             cur.execute(SQL_VIEW_ENTRY, (service_name,))
             row = cur.fetchmany(1)
             if len(row) == 0:
-                click.secho(f"No entry was found with the service name: {service_name}", fg="yellow")
+                click.secho(
+                    f"No entry was found with the service name: {service_name}",
+                    fg="yellow",
+                )
                 sys.exit(0)
             return row
     except sqlite3.Error as e:
@@ -149,9 +150,7 @@ def list_entries(pek):
                 sys.exit(0)
             return rows
     except sqlite3.Error as e:
-        raise Exception(
-            f"Could not retrieve all entries. Details: {e}"
-        ) from e
+        raise Exception(f"Could not retrieve all entries. Details: {e}") from e
 
 
 def update_entry(pek, service_name, password):
