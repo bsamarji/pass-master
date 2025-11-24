@@ -1,6 +1,8 @@
 import configparser
-import click
 import sys
+
+import click
+
 
 def set_default_user_config_values():
     """

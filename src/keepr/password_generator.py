@@ -1,6 +1,11 @@
-import string
 import secrets
-from keepr.internal_config import PASSWORD_GENERATOR_LENGTH, PASSWORD_GENERATOR_SPECIAL_CHARS
+import string
+
+from keepr.internal_config import (
+    PASSWORD_GENERATOR_LENGTH,
+    PASSWORD_GENERATOR_SPECIAL_CHARS,
+)
+
 
 def password_generator(without_special_chars=False):
     """

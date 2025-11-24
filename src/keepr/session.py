@@ -1,9 +1,17 @@
-import time
 import os
+import time
 from pathlib import Path
+
 import click
-from keepr.internal_config import SESSION_FILE_NAME, SESSION_TIMEOUT_SECONDS, SECURITY_DIR_NAME, APP_DIR_NAME
-from keepr.internal_config import COLOR_ERROR
+
+from keepr.internal_config import (
+    APP_DIR_NAME,
+    COLOR_ERROR,
+    SECURITY_DIR_NAME,
+    SESSION_FILE_NAME,
+    SESSION_TIMEOUT_SECONDS,
+)
+
 
 def get_session_file_path():
     """
@@ -55,11 +63,17 @@ def retrieve_session_pek():
             return pek
 
     except Exception as e:
-        click.secho(f"SESSION ERROR: Failed to retrieve session data. Details: {e}", **COLOR_ERROR)
+        click.secho(
+            f"SESSION ERROR: Failed to retrieve session data. Details: {e}",
+            **COLOR_ERROR
+        )
         try:
             session_file.unlink()
-        except:
-            pass
+        except Exception as e:
+            click.secho(
+                f"SESSION ERROR: Failed to delete session file. Details: {e}",
+                **COLOR_ERROR
+            )
         return None
 
 def clear_session_data():

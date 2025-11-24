@@ -1,15 +1,28 @@
-import click
-import tabulate
 import sys
 from pathlib import Path
+
+import click
 import pyperclip
-from keepr import db, security, session, user_config
-from keepr.internal_config import (COLOR_SENSITIVE_DATA, COLOR_NON_SENSITIVE_DATA, COLOR_WARNING, COLOR_ERROR,
-                                   COLOR_HEADER, COLOR_PROMPT_BOLD, COLOR_PROMPT_LIGHT, COLOR_SUCCESS)
-from keepr.internal_config import APP_DIR_NAME, SECURITY_DIR_NAME, PEK_FILE_NAME, USER_CONFIG_FILE_NAME
-from keepr.internal_config import COMMANDS_VALID_NO_ARGS
-from keepr.internal_config import SESSION_TIMEOUT_SECONDS
+import tabulate
+
+from keepr import db, security, session
+from keepr.internal_config import (
+    APP_DIR_NAME,
+    COLOR_ERROR,
+    COLOR_HEADER,
+    COLOR_NON_SENSITIVE_DATA,
+    COLOR_PROMPT_BOLD,
+    COLOR_PROMPT_LIGHT,
+    COLOR_SENSITIVE_DATA,
+    COLOR_SUCCESS,
+    COLOR_WARNING,
+    COMMANDS_VALID_NO_ARGS,
+    PEK_FILE_NAME,
+    SECURITY_DIR_NAME,
+    SESSION_TIMEOUT_SECONDS,
+)
 from keepr.password_generator import password_generator
+
 
 def authenticate_from_session(ctx):
     """
@@ -103,7 +116,7 @@ def login():
     # --- SESSION STORAGE ---
     if session.store_session_data(pek=session_pek):
         db.initialise_db(pek=session_pek)  # Ensure DB is initialized with the PEK
-        click.secho(f"\nVault UNLOCKED. Commands will now run without further authentication.", **COLOR_SUCCESS)
+        click.secho("\nVault UNLOCKED. Commands will now run without further authentication.", **COLOR_SUCCESS)
         click.secho("Remember to run 'keepr logout' when finished.", **COLOR_WARNING)
         if SESSION_TIMEOUT_SECONDS < 60:
             click.secho(f"The session will terminate in {SESSION_TIMEOUT_SECONDS} seconds.", **COLOR_WARNING)
@@ -391,7 +404,7 @@ def list_entries(ctx):
         sys.exit(1)
 
     try:
-        click.secho(f"Retrieving all entries.", **COLOR_HEADER)
+        click.secho("Retrieving all entries.", **COLOR_HEADER)
         rows = db.list_entries(pek=session_pek)
 
         headers = [

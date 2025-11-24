@@ -1,5 +1,6 @@
 import configparser
 from pathlib import Path
+
 from keepr.user_config import initialise_user_config
 
 # --- APP FILE PATHS ---

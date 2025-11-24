@@ -1,13 +1,24 @@
 import base64
 import os
+import sys
 from pathlib import Path
+
+import click
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from keepr.internal_config import APP_DIR_NAME, SECURITY_DIR_NAME, SALT_FILE_NAME, PEK_FILE_NAME
-from keepr.internal_config import COLOR_WARNING, COLOR_ERROR, COLOR_PROMPT_BOLD, COLOR_PROMPT_LIGHT, COLOR_SUCCESS
-import click
-import sys
+
+from keepr.internal_config import (
+    APP_DIR_NAME,
+    COLOR_ERROR,
+    COLOR_PROMPT_BOLD,
+    COLOR_PROMPT_LIGHT,
+    COLOR_SUCCESS,
+    COLOR_WARNING,
+    PEK_FILE_NAME,
+    SALT_FILE_NAME,
+    SECURITY_DIR_NAME,
+)
 
 
 def initialise_security_dir():
@@ -34,7 +45,7 @@ def generate_salt_file():
         try:
             with open(salt_file, "wb") as f:
                 f.write(salt)
-        except IOError as e:
+        except OSError as e:
             click.secho(f"Error writing salt file to {salt_file}: {e}", **COLOR_ERROR)
             sys.exit(1)
 
@@ -59,7 +70,7 @@ def retrieve_salt():
     except FileNotFoundError:
         click.secho(f"Salt file not found at {salt_file}. Run setup first.", **COLOR_ERROR)
         sys.exit(1)
-    except IOError as e:
+    except OSError as e:
         click.secho(f"Error reading salt file: {e}", **COLOR_ERROR)
         sys.exit(1)
 
@@ -196,7 +207,7 @@ def encrypt_pek(derived_key, pek):
     try:
         with open(pek_file, "wb") as file:
             file.write(encrypted_pek)
-    except IOError as e:
+    except OSError as e:
         click.secho(f"Critical error: Failed to write PEK file: {e}", **COLOR_ERROR)
         sys.exit(1)
 
@@ -224,7 +235,7 @@ def retrieve_and_decrypt_pek(derived_key):
     except FileNotFoundError:
         click.secho(f"PEK file not found at {pek_file}. Run setup first.", **COLOR_ERROR)
         return None
-    except IOError as e:
+    except OSError as e:
         click.secho(f"Error reading PEK file: {e}", **COLOR_ERROR)
         return None
 
