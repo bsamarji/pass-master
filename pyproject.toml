@@ -30,6 +30,7 @@ dependencies = [
     "mkdocs-git-committers-plugin-2>=2.5.0",
     "mkdocs-git-revision-date-localized-plugin>=1.5.0",
     "ruff>=0.14.6",
+    "pytest>=9.0.1",
 ]
 keywords = ["cli", "password manager", "cryptography", "developer tools", "open source", "security", "sqlcipher"]
 
