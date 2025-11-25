@@ -96,6 +96,8 @@ Read about the full encryption architecture in the [docs](https://bsamarji.githu
 
 Contributions, ideas, and bug reports are welcome.
 
+Please read the [contributions](CONTRIBUTING.md) page for more details.
+
 Please open an issue before submitting major changes.
 
 ---
