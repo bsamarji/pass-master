@@ -16,19 +16,30 @@ def password_generator(without_special_chars=False):
     """
     if without_special_chars:
         alphabet = string.ascii_letters + string.digits
+
+        while True:
+            password = "".join(
+                secrets.choice(alphabet) for i in range(PASSWORD_GENERATOR_LENGTH)
+            )
+            if (
+                any(c.islower() for c in password)
+                and any(c.isupper() for c in password)
+                and sum(c.isdigit() for c in password) >= 3
+            ):
+                break
     else:
         alphabet = (
             string.ascii_letters + string.digits + PASSWORD_GENERATOR_SPECIAL_CHARS
         )
-    while True:
-        password = "".join(
-            secrets.choice(alphabet) for i in range(PASSWORD_GENERATOR_LENGTH)
-        )
-        if (
-            any(c.islower() for c in password)
-            and any(c.isupper() for c in password)
-            and any(c in password for c in PASSWORD_GENERATOR_SPECIAL_CHARS)
-            and sum(c.isdigit() for c in password) >= 3
-        ):
-            break
+        while True:
+            password = "".join(
+                secrets.choice(alphabet) for i in range(PASSWORD_GENERATOR_LENGTH)
+            )
+            if (
+                any(c.islower() for c in password)
+                and any(c.isupper() for c in password)
+                and any(c in password for c in PASSWORD_GENERATOR_SPECIAL_CHARS)
+                and sum(c.isdigit() for c in password) >= 3
+            ):
+                break
     return password
