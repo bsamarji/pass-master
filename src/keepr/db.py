@@ -1,9 +1,20 @@
-import sqlcipher3.dbapi2 as sqlite3
-from pathlib import Path
-import click
 import sys
-from keepr.internal_config import *
-from keepr.sql_queries import *
+from pathlib import Path
+
+import click
+import sqlcipher3.dbapi2 as sqlite3
+
+from keepr.internal_config import APP_DIR_NAME, COLOR_ERROR, DB_FILE_NAME
+from keepr.sql_queries import (
+    SQL_CREATE_TABLE,
+    SQL_DELETE_ENTRY,
+    SQL_INSERT_ENTRY,
+    SQL_LIST,
+    SQL_SEARCH,
+    SQL_UPDATE_ENTRY,
+    SQL_VALIDATE_SERVICE_NAME,
+    SQL_VIEW_ENTRY,
+)
 
 
 def get_db_path():
@@ -52,7 +63,9 @@ def initialise_db(pek):
         with get_db_connection(pek) as conn:
             conn.execute(SQL_CREATE_TABLE)
     except sqlite3.Error as e:
-        click.secho(f"Could not initialise the database. Details: {e}", err=True, **COLOR_ERROR)
+        click.secho(
+            f"Could not initialise the database. Details: {e}", err=True, **COLOR_ERROR
+        )
         sys.exit(1)
 
 
@@ -66,7 +79,9 @@ def add_entry(pek, service_name, username, password, url, note):
                 SQL_INSERT_ENTRY, (service_name, username, password, url, note)
             )
     except sqlite3.Error as e:
-        raise Exception(f"Could not insert entry for {service_name}. Details: {e}")
+        raise Exception(
+            f"Could not insert entry for {service_name}. Details: {e}"
+        ) from e
 
 
 def view_entry(pek, service_name):
@@ -80,11 +95,16 @@ def view_entry(pek, service_name):
             cur.execute(SQL_VIEW_ENTRY, (service_name,))
             row = cur.fetchmany(1)
             if len(row) == 0:
-                click.secho(f"No entry was found with the service name: {service_name}", fg="yellow")
+                click.secho(
+                    f"No entry was found with the service name: {service_name}",
+                    fg="yellow",
+                )
                 sys.exit(0)
             return row
     except sqlite3.Error as e:
-        raise Exception(f"Could not retrieve entry for {service_name}. Details: {e}")
+        raise Exception(
+            f"Could not retrieve entry for {service_name}. Details: {e}"
+        ) from e
 
 
 def search(pek, search_term):
@@ -109,7 +129,7 @@ def search(pek, search_term):
     except sqlite3.Error as e:
         raise Exception(
             f"Could not retrieve any entries for {search_term}. Details: {e}"
-        )
+        ) from e
 
 
 def list_entries(pek):
@@ -124,13 +144,13 @@ def list_entries(pek):
             rows = cur.fetchall()
             if len(rows) == 0:
                 click.secho(
-                    f"No entries are currently stored. Please add at least one entry",
+                    "No entries are currently stored. Please add at least one entry",
                     fg="yellow",
                 )
                 sys.exit(0)
             return rows
     except sqlite3.Error as e:
-        raise Exception(f"Could not retrieve all entries. Details: {e}")
+        raise Exception(f"Could not retrieve all entries. Details: {e}") from e
 
 
 def update_entry(pek, service_name, password):
@@ -147,7 +167,9 @@ def update_entry(pek, service_name, password):
                 ),
             )
     except sqlite3.Error as e:
-        raise Exception(f"Could not update the entry for {service_name}. Details: {e}")
+        raise Exception(
+            f"Could not update the entry for {service_name}. Details: {e}"
+        ) from e
 
 
 def delete_entry(pek, service_name):
@@ -158,7 +180,9 @@ def delete_entry(pek, service_name):
         with get_db_connection(pek) as conn:
             conn.execute(SQL_DELETE_ENTRY, (service_name,))
     except sqlite3.Error as e:
-        raise Exception(f"Could not delete the entry for {service_name}. Details: {e}")
+        raise Exception(
+            f"Could not delete the entry for {service_name}. Details: {e}"
+        ) from e
 
 
 def validate_service_name(pek, service_name):
@@ -180,4 +204,4 @@ def validate_service_name(pek, service_name):
     except sqlite3.Error as e:
         raise Exception(
             f"Could not validate the entry for {service_name}. Details: {e}"
-        )
+        ) from e

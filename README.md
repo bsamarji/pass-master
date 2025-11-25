@@ -96,6 +96,8 @@ Read about the full encryption architecture in the [docs](https://bsamarji.githu
 
 Contributions, ideas, and bug reports are welcome.
 
+Please read the [contributions](CONTRIBUTING.md) page for more details.
+
 Please open an issue before submitting major changes.
 
 ---
@@ -125,6 +127,7 @@ Planned future features and improvements:
 - 🔄 A copy command, which copies a password for an entry to the clipboard, without displaying any info on screen.
 - 🧩 A generate command, which just generates a password and displays it on screen (separate to the -g option for the add command).
 - 🛡️ Optional Two-factor authentication.
+- 💻 TUI (Terminal user interface)
 
 If you want to help shape the roadmap, feel free to open an issue or submit proposals.
 

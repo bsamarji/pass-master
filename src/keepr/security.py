@@ -1,13 +1,24 @@
 import base64
 import os
+import sys
 from pathlib import Path
+
+import click
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from keepr.internal_config import APP_DIR_NAME, SECURITY_DIR_NAME, SALT_FILE_NAME, PEK_FILE_NAME
-from keepr.internal_config import COLOR_WARNING, COLOR_ERROR, COLOR_PROMPT_BOLD, COLOR_PROMPT_LIGHT, COLOR_SUCCESS
-import click
-import sys
+
+from keepr.internal_config import (
+    APP_DIR_NAME,
+    COLOR_ERROR,
+    COLOR_PROMPT_BOLD,
+    COLOR_PROMPT_LIGHT,
+    COLOR_SUCCESS,
+    COLOR_WARNING,
+    PEK_FILE_NAME,
+    SALT_FILE_NAME,
+    SECURITY_DIR_NAME,
+)
 
 
 def initialise_security_dir():
@@ -19,8 +30,11 @@ def initialise_security_dir():
     try:
         Path.mkdir(security_dir, parents=True, exist_ok=True)
     except OSError as e:
-        click.secho(f"Error creating security directory at {security_dir}: {e}", **COLOR_ERROR)
+        click.secho(
+            f"Error creating security directory at {security_dir}: {e}", **COLOR_ERROR
+        )
         sys.exit(1)
+
 
 def generate_salt_file():
     """
@@ -34,7 +48,7 @@ def generate_salt_file():
         try:
             with open(salt_file, "wb") as f:
                 f.write(salt)
-        except IOError as e:
+        except OSError as e:
             click.secho(f"Error writing salt file to {salt_file}: {e}", **COLOR_ERROR)
             sys.exit(1)
 
@@ -57,9 +71,11 @@ def retrieve_salt():
             sys.exit(1)
         return salt
     except FileNotFoundError:
-        click.secho(f"Salt file not found at {salt_file}. Run setup first.", **COLOR_ERROR)
+        click.secho(
+            f"Salt file not found at {salt_file}. Run setup first.", **COLOR_ERROR
+        )
         sys.exit(1)
-    except IOError as e:
+    except OSError as e:
         click.secho(f"Error reading salt file: {e}", **COLOR_ERROR)
         sys.exit(1)
 
@@ -108,7 +124,9 @@ def login():
         return master_password
     else:
         master_password = click.prompt(
-            click.style("Please enter your current master password", **COLOR_PROMPT_BOLD),
+            click.style(
+                "Please enter your current master password", **COLOR_PROMPT_BOLD
+            ),
             hide_input=True,
             confirmation_prompt=True,
         )
@@ -131,7 +149,9 @@ def prompt_new_master_password():
     if not master_password:
         click.secho("Master password cannot be empty.", **COLOR_ERROR)
         sys.exit(1)
-    if click.confirm(click.style("Ready to save your new master password?", **COLOR_PROMPT_LIGHT)):
+    if click.confirm(
+        click.style("Ready to save your new master password?", **COLOR_PROMPT_LIGHT)
+    ):
         click.secho("Successfully updated master password!", **COLOR_SUCCESS)
     else:
         click.secho("Operation cancelled.", **COLOR_WARNING)
@@ -196,7 +216,7 @@ def encrypt_pek(derived_key, pek):
     try:
         with open(pek_file, "wb") as file:
             file.write(encrypted_pek)
-    except IOError as e:
+    except OSError as e:
         click.secho(f"Critical error: Failed to write PEK file: {e}", **COLOR_ERROR)
         sys.exit(1)
 
@@ -222,9 +242,11 @@ def retrieve_and_decrypt_pek(derived_key):
         with open(pek_file, "rb") as file:
             encrypted_pek = file.read()
     except FileNotFoundError:
-        click.secho(f"PEK file not found at {pek_file}. Run setup first.", **COLOR_ERROR)
+        click.secho(
+            f"PEK file not found at {pek_file}. Run setup first.", **COLOR_ERROR
+        )
         return None
-    except IOError as e:
+    except OSError as e:
         click.secho(f"Error reading PEK file: {e}", **COLOR_ERROR)
         return None
 
@@ -240,7 +262,9 @@ def retrieve_and_decrypt_pek(derived_key):
         pek = f.decrypt(encrypted_pek)
         return pek
     except InvalidToken:
-        click.secho("The master password is incorrect. Please try again.", **COLOR_ERROR)
+        click.secho(
+            "The master password is incorrect. Please try again.", **COLOR_ERROR
+        )
         sys.exit(1)
     except Exception as e:
         click.secho(f"Unknown decryption error: {e}", **COLOR_ERROR)
