@@ -1,6 +1,6 @@
 import configparser
 
-from keepr.user_config import set_default_user_config_values
+from keepr.user_config import initialise_user_config, set_default_user_config_values
 
 # --- Arrange: Organise test data  ---
 EXPECTED_SECTIONS = [
@@ -65,3 +65,62 @@ def test_set_default_user_config_values():
             assert actual_value == expected_value, (
                 f"Mismatch in [{section}] {key}: Expected '{expected_value}', got '{actual_value}'"
             )
+
+
+def test_initialise_user_config(tmp_path):
+    """
+    Test if the user config file is correctly initialised.
+    """
+
+    # --- Arrange: Set tmp path for test config file ---
+    config_file_path = tmp_path / "user_config.ini"
+
+    # --- Assert: The file should not already exist ---
+    assert not config_file_path.exists(), "The user config file should not exist."
+
+    # --- Act: Initialise tmp config file ---
+    initialise_user_config(config_file_path)
+
+    # --- Assert: The tmp config file should now exist ---
+    assert config_file_path.exists(), "The user config file should exist."
+
+    # --- Act: Get the contents of the tmp config file ---
+    tmp_config = configparser.ConfigParser()
+    tmp_config.read(config_file_path)
+
+    # --- Assert: Check the contents of the tmp config file are correct ---
+    for section, expected_keys in EXPECTED_DEFAULT_VALUES.items():
+        for key, expected_value in expected_keys.items():
+            actual_value = tmp_config[section][key]
+
+            assert actual_value == expected_value, (
+                f"Mismatch in [{section}] {key}: Expected '{expected_value}', got '{actual_value}'"
+            )
+
+
+def test_initialise_user_config_skip(tmp_path):
+    """
+    Test if the user config skips creating a new file, if a config file already exists.
+    We can test this by setting placeholder content, and then checking before and
+    after the function call if the placeholder content has changed.
+    The function call will create a new file with default values, which will change the
+     content, if the file creation is not skipped
+    """
+
+    # --- Arrange: Setup tmp config file with testable content ---
+    config_file_path = tmp_path / "user_config.ini"
+    content = "[SESSION_CONFIG]\nsession_timeout_seconds = 9999\n"
+    config_file_path.write_text(content)
+
+    # --- Assert: Check the config file exists and contains the placeholder content ---
+    assert config_file_path.read_text() == content, (
+        "The config file exists and contains the original content."
+    )
+
+    # --- Act: Call the initialise function ---
+    initialise_user_config(config_file_path)
+
+    # --- Assert: Check if the file contents have been changed ---
+    assert config_file_path.read_text() == content, (
+        "The config file creation was not skipped."
+    )
