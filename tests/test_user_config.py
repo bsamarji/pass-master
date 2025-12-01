@@ -2,6 +2,7 @@ import configparser
 
 from keepr.user_config import set_default_user_config_values
 
+# --- Arrange: Organise test data  ---
 EXPECTED_SECTIONS = [
     "SESSION_CONFIG",
     "PASSWORD_CONFIG",
