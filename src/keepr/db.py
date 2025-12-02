@@ -61,7 +61,9 @@ def initialise_db(pek):
     """
     try:
         with get_db_connection(pek) as conn:
-            conn.execute(SQL_CREATE_TABLE)
+            cur = conn.cursor()
+            cur.execute(SQL_CREATE_TABLE)
+            conn.commit()
     except sqlite3.Error as e:
         click.secho(
             f"Could not initialise the database. Details: {e}", err=True, **COLOR_ERROR
@@ -75,9 +77,9 @@ def add_entry(pek, service_name, username, password, url, note):
     """
     try:
         with get_db_connection(pek) as conn:
-            conn.execute(
-                SQL_INSERT_ENTRY, (service_name, username, password, url, note)
-            )
+            cur = conn.cursor()
+            cur.execute(SQL_INSERT_ENTRY, (service_name, username, password, url, note))
+            conn.commit()
     except sqlite3.Error as e:
         raise Exception(
             f"Could not insert entry for {service_name}. Details: {e}"
@@ -100,6 +102,7 @@ def view_entry(pek, service_name):
                     fg="yellow",
                 )
                 sys.exit(0)
+            conn.commit()
             return row
     except sqlite3.Error as e:
         raise Exception(
@@ -125,6 +128,7 @@ def search(pek, search_term):
                     fg="yellow",
                 )
                 sys.exit(0)
+            conn.commit()
             return rows
     except sqlite3.Error as e:
         raise Exception(
@@ -148,6 +152,7 @@ def list_entries(pek):
                     fg="yellow",
                 )
                 sys.exit(0)
+            conn.commit()
             return rows
     except sqlite3.Error as e:
         raise Exception(f"Could not retrieve all entries. Details: {e}") from e
@@ -159,13 +164,15 @@ def update_entry(pek, service_name, password):
     """
     try:
         with get_db_connection(pek) as conn:
-            conn.execute(
+            cur = conn.cursor()
+            cur.execute(
                 SQL_UPDATE_ENTRY,
                 (
                     password,
                     service_name,
                 ),
             )
+            conn.commit()
     except sqlite3.Error as e:
         raise Exception(
             f"Could not update the entry for {service_name}. Details: {e}"
@@ -178,7 +185,9 @@ def delete_entry(pek, service_name):
     """
     try:
         with get_db_connection(pek) as conn:
-            conn.execute(SQL_DELETE_ENTRY, (service_name,))
+            cur = conn.cursor()
+            cur.execute(SQL_DELETE_ENTRY, (service_name,))
+            conn.commit()
     except sqlite3.Error as e:
         raise Exception(
             f"Could not delete the entry for {service_name}. Details: {e}"
@@ -197,6 +206,7 @@ def validate_service_name(pek, service_name):
                 (service_name,),
             )
             row = cur.fetchmany(1)
+            conn.commit()
             if len(row) > 0:
                 return True
             else:
