@@ -54,13 +54,10 @@ def test_view_nonexistent_entry(fresh_db, capsys):
     """Test viewing an entry that doesn't exist."""
 
     # --- Act: view the entry ---
-    # view_entry uses click.secho and sys.exit(0) for 'No entry was found'
-    # so a check for both the exit and the printed message is required.
     with pytest.raises(SystemExit) as excinfo:
         view_entry(TEST_PEK, "NonExistentService")
 
     # --- Assert: test for the output of a non-existent entry ---
-    # Check that the function exited gracefully (exit code 0)
     assert excinfo.value.code == 0
 
     # Check the printed output
@@ -126,6 +123,24 @@ def test_search_entry(fresh_db):
     assert "Personal Email" not in service_names
 
 
+def test_search_non_matching_term(fresh_db, capsys):
+    """Test searching for entries on a non-matching search term."""
+
+    # --- Act: search using a non-matching search term ---
+    with pytest.raises(SystemExit) as excinfo:
+        search(TEST_PEK, "NonExistentService")
+
+    # --- Assert: test for the output of a non-existent entry ---
+    assert excinfo.value.code == 0
+
+    # Check the printed output
+    captured = capsys.readouterr()
+    assert (
+        "No entries were found with service names that contain the search term: NonExistentService"
+        in captured.out
+    )
+
+
 def test_list_entries(fresh_db):
     """Test retrieving all entries."""
 
@@ -141,3 +156,20 @@ def test_list_entries(fresh_db):
     service_names = [row[0] for row in rows]
     assert "Entry1" in service_names
     assert "Entry2" in service_names
+
+
+def test_list_with_no_entries(fresh_db, capsys):
+    """Test list_entries with no entries."""
+
+    # --- Act: search using a non-matching search term ---
+    with pytest.raises(SystemExit) as excinfo:
+        list_entries(TEST_PEK)
+
+    # --- Assert: test for the output of a non-existent entry ---
+    assert excinfo.value.code == 0
+
+    # Check the printed output
+    captured = capsys.readouterr()
+    assert (
+        "No entries are currently stored. Please add at least one entry" in captured.out
+    )
