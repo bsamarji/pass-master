@@ -90,6 +90,8 @@ def clear_session_data():
         if session_file.exists():
             session_file.unlink()
             return True
+        else:
+            return None
     except Exception as e:
         click.secho(
             f"SESSION ERROR: Failed to clear session data. Details: {e}", **COLOR_ERROR
