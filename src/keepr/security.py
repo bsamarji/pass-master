@@ -120,7 +120,7 @@ def login():
         # Check for empty password
         if not master_password:
             click.secho("Master password cannot be empty.", **COLOR_ERROR)
-            sys.exit(1)
+            sys.exit(0)
         return master_password
     else:
         master_password = click.prompt(
@@ -145,17 +145,20 @@ def prompt_new_master_password():
         hide_input=True,
         confirmation_prompt=True,
     )
+
     # Check for empty password
     if not master_password:
         click.secho("Master password cannot be empty.", **COLOR_ERROR)
-        sys.exit(1)
+        sys.exit(0)
+
     if click.confirm(
         click.style("Ready to save your new master password?", **COLOR_PROMPT_LIGHT)
     ):
         click.secho("Successfully updated master password!", **COLOR_SUCCESS)
     else:
         click.secho("Operation cancelled.", **COLOR_WARNING)
-        sys.exit(1)
+        sys.exit(0)
+
     return master_password
 
 
